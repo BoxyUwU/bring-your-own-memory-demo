@@ -76,7 +76,12 @@ impl CanDriver {
         });
 
         receiver.client = Some(CanDriverClient {
-            receiver: NonNull::new(receiver as *mut _ as *const dyn Receive as *mut _).unwrap(),
+            receiver: NonNull::new(unsafe {
+                core::mem::transmute::<*mut (dyn Receive + '_), *mut (dyn Receive + 'static)>(
+                    receiver,
+                )
+            })
+            .unwrap(),
             nav: Mutex::new(RefCell::new(CanDriverClientNav {
                 next: None,
                 prev: None,
